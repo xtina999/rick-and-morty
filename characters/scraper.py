@@ -1,7 +1,9 @@
+from sqlite3 import IntegrityError
+
 import requests
 
 from characters.models import Characters
-from rick_and_morty_api import settings
+from django.conf import settings
 
 
 def scrape_characters() -> list[Characters]:
@@ -27,9 +29,18 @@ def scrape_characters() -> list[Characters]:
     return characters_
 
 
+import logging
+from django.db import IntegrityError
+
+logger = logging.getLogger(__name__)
+
+
 def save_characters(characters: list[Characters]) -> None:
     for character in characters:
-        character.save()
+        try:
+            character.save()
+        except IntegrityError as e:
+            logger.error(f"An IntegrityError occurred while saving character {character}: {e}")
 
 
 def sync_characters_with_api() -> None:
